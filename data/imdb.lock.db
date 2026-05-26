@@ -1,0 +1,6 @@
+#FileLock
+#Sun May 24 14:02:29 CST 2026
+hostName=192.168.43.98
+id=19e5893e1ac0ed75254fdae0aaadeda4d905dc04a9a
+method=file
+server=192.168.43.98\:55290

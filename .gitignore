@@ -1,0 +1,8 @@
+node_modules/
+.tools/
+target/classes/
+target/generated-sources/
+target/maven-archiver/
+target/maven-status/
+*.log
+.vscode/

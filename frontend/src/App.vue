@@ -10,22 +10,24 @@
   </div>
   <ToastNotification />
   <ImageLightbox />
+  <CallPanel />
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { store, setCurrentUser } from "./store.js";
+import { onMounted, ref } from "vue";
 import { connectSocket } from "./websocket.js";
+import { setCurrentUser, store } from "./store.js";
 import AuthPage from "./components/AuthPage.vue";
-import Sidebar from "./components/Sidebar.vue";
+import CallPanel from "./components/CallPanel.vue";
 import ChatPanel from "./components/ChatPanel.vue";
-import ToastNotification from "./components/ToastNotification.vue";
 import ImageLightbox from "./components/ImageLightbox.vue";
+import Sidebar from "./components/Sidebar.vue";
+import ToastNotification from "./components/ToastNotification.vue";
 
 const chatPanel = ref(null);
 
 function onLoggedIn() {
-  // AuthPage 已经处理了登录逻辑
+  // AuthPage 宸茬粡澶勭悊浜嗙櫥褰曢€昏緫
 }
 
 function onSelectFriend(friend) {
@@ -37,11 +39,10 @@ function onSelectGroup(group) {
 }
 
 function onLogout() {
-  // Sidebar 已经处理了清除逻辑
+  // Sidebar 宸茬粡澶勭悊浜嗘竻闄ら€昏緫
 }
 
 onMounted(() => {
-  // 尝试从 localStorage 恢复会话
   const token = localStorage.getItem("im_token");
   const userId = localStorage.getItem("im_userId");
   const username = localStorage.getItem("im_username");

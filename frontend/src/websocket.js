@@ -1,3 +1,4 @@
+import { handleCallSignal, registerCallSignalSender } from "./call.js";
 import { store, showToast } from "./store.js";
 
 export function connectSocket() {
@@ -21,7 +22,11 @@ export function connectSocket() {
 
   store.ws.onmessage = (event) => {
     let msg;
-    try { msg = JSON.parse(event.data); } catch { return; }
+    try {
+      msg = JSON.parse(event.data);
+    } catch {
+      return;
+    }
 
     if (msg.type === "onlineUsers") {
       store.socketState = `已连接，在线 ${msg.count} 人`;
@@ -38,6 +43,10 @@ export function connectSocket() {
     }
     if (msg.type === "friendRequest") {
       showToast(msg.message || "收到新的好友请求");
+      return;
+    }
+    if (msg.type && msg.type.startsWith("call-")) {
+      handleCallSignal(msg);
       return;
     }
     if (msg.type === "error") {
@@ -63,7 +72,6 @@ function receivePrivateMessage(msg) {
   if (!store.privateConversations[peer]) store.privateConversations[peer] = [];
   store.privateConversations[peer].push(msg);
   if (store.selectedFriend && store.selectedFriend.username === peer) {
-    // 触发消息列表更新
     store.privateConversations = { ...store.privateConversations };
   }
 }
@@ -86,3 +94,5 @@ export function sendWsMessage(payload) {
   store.ws.send(JSON.stringify(payload));
   return true;
 }
+
+registerCallSignalSender(sendWsMessage);

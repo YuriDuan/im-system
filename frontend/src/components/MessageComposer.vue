@@ -13,7 +13,7 @@
     <input
       ref="fileInput"
       type="file"
-      style="display:none"
+      style="display: none"
       @change="handleFileSend"
     />
   </form>
@@ -21,9 +21,9 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { store, showToast } from "../store.js";
-import { sendWsMessage } from "../websocket.js";
 import { uploadFile } from "../api.js";
+import { showToast, store } from "../store.js";
+import { sendWsMessage } from "../websocket.js";
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -37,8 +37,8 @@ const fileInput = ref(null);
 
 watch(
   () => props.visible,
-  (v) => {
-    if (v) {
+  (visible) => {
+    if (visible) {
       text.value = "";
       setTimeout(() => msgInput.value?.focus(), 50);
     }
@@ -53,21 +53,40 @@ function openFilePicker() {
   fileInput.value?.click();
 }
 
-async function handleFileSend(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+function buildTargetPayload(basePayload) {
+  if (store.currentMode === "friend" && store.selectedFriend) {
+    return {
+      ...basePayload,
+      type: "privateChat",
+      toUser: store.selectedFriend.username,
+    };
+  }
+  if (store.currentMode === "group" && store.selectedGroup) {
+    return {
+      ...basePayload,
+      type: "groupChat",
+      groupId: store.selectedGroup.id,
+    };
+  }
+  showToast("请先选择会话");
+  return null;
+}
+
+async function handleFileSend(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
 
   if (!store.ws || store.ws.readyState !== WebSocket.OPEN) {
     showToast("WebSocket 未连接");
-    e.target.value = "";
+    event.target.value = "";
     return;
   }
-  if (
-    (store.currentMode === "friend" && !store.selectedFriend) ||
-    (store.currentMode === "group" && !store.selectedGroup)
-  ) {
+
+  if (!store.selectedFriend && !store.selectedGroup) {
     showToast("请先选择会话");
-    e.target.value = "";
+    event.target.value = "";
     return;
   }
 
@@ -75,58 +94,51 @@ async function handleFileSend(e) {
     const uploadData = await uploadFile(file);
     if (!uploadData.success) {
       showToast(uploadData.message || "文件上传失败");
-      e.target.value = "";
+      event.target.value = "";
       return;
     }
 
-    const payload = {
+    const messageType = file.type.startsWith("image/") ? "image" : "file";
+    const payload = buildTargetPayload({
       username: store.currentUser.username,
-      content: `[文件] ${uploadData.fileName || file.name}`,
-      messageType: "file",
+      content: messageType === "image" ? "" : `[文件] ${uploadData.fileName || file.name}`,
+      messageType,
       fileUrl: uploadData.fileUrl,
       fileName: uploadData.fileName || file.name,
-    };
+    });
 
-    if (store.currentMode === "friend") {
-      payload.type = "privateChat";
-      payload.toUser = store.selectedFriend.username;
-    } else {
-      payload.type = "groupChat";
-      payload.groupId = store.selectedGroup.id;
+    if (!payload) {
+      event.target.value = "";
+      return;
     }
 
     sendWsMessage(payload);
     showToast("文件发送成功");
     emit("sent");
-  } catch (err) {
-    showToast(err.message);
+  } catch (error) {
+    showToast(error.message);
   } finally {
-    e.target.value = "";
+    event.target.value = "";
   }
 }
 
 function handleSend() {
   const content = text.value.trim();
-  if (!content) return;
+  if (!content) {
+    return;
+  }
   if (!store.ws || store.ws.readyState !== WebSocket.OPEN) {
     showToast("WebSocket 未连接");
     return;
   }
 
-  const payload = {
+  const payload = buildTargetPayload({
     username: store.currentUser.username,
     content,
     messageType: "text",
-  };
+  });
 
-  if (store.currentMode === "friend" && store.selectedFriend) {
-    payload.type = "privateChat";
-    payload.toUser = store.selectedFriend.username;
-  } else if (store.currentMode === "group" && store.selectedGroup) {
-    payload.type = "groupChat";
-    payload.groupId = store.selectedGroup.id;
-  } else {
-    showToast("请先选择会话");
+  if (!payload) {
     return;
   }
 

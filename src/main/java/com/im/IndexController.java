@@ -13,7 +13,7 @@ public class IndexController {
 
     @GetMapping("/")
     public String index() {
-        return "forward:/index-v2.html";
+        return "forward:/index.html";
     }
 }
 

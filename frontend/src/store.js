@@ -7,43 +7,43 @@ const stored = {
 };
 
 export const store = reactive({
-  // 当前用户
   currentUser: stored.token ? { token: stored.token, userId: stored.userId, username: stored.username } : null,
 
-  // WebSocket
   ws: null,
   socketState: "等待连接",
   isOnline: false,
   onlineCount: 0,
 
-  // 模式: friend | group
   currentMode: "friend",
-
-  // 选中的会话
   selectedFriend: null,
   selectedGroup: null,
 
-  // 缓存
   friendCache: [],
   groupCache: [],
   pendingRequests: [],
 
-  // 会话消息
   privateConversations: {},
   groupConversations: {},
 
-  // Toast
   toastMessage: "",
   toastVisible: false,
   toastTimer: null,
 
-  // 图片预览
   lightboxUrl: "",
-
-  // 表情栏
   showEmoji: false,
+  call: {
+    active: false,
+    incoming: false,
+    kind: "",
+    status: "idle",
+    callId: "",
+    peerUsername: "",
+    peerDisplayName: "",
+    localStream: null,
+    remoteStream: null,
+    error: "",
+  },
 
-  // 配置
   get apiBase() {
     return window.APP_CONFIG?.API_BASE || `${window.location.origin}/api`;
   },
@@ -85,6 +85,16 @@ export function clearSession() {
   store.groupConversations = {};
   store.showEmoji = false;
   store.lightboxUrl = "";
+  store.call.active = false;
+  store.call.incoming = false;
+  store.call.kind = "";
+  store.call.status = "idle";
+  store.call.callId = "";
+  store.call.peerUsername = "";
+  store.call.peerDisplayName = "";
+  store.call.localStream = null;
+  store.call.remoteStream = null;
+  store.call.error = "";
   if (store.ws) {
     store.ws.close();
     store.ws = null;

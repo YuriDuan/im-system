@@ -36,7 +36,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 允许公开的认证端点
                 .antMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // 允许首页和静态资源访问
-                .antMatchers("/", "/index-v2.html").permitAll()
+                .antMatchers("/", "/index.html", "/index-v2.html").permitAll()
                 .antMatchers("/static/**", "/favicon.ico").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 // 允许公开的API信息端点

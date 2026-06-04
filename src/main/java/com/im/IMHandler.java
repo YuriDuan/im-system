@@ -37,6 +37,11 @@ public class IMHandler extends TextWebSocketHandler {
                 return;
             }
 
+            if (type != null && type.startsWith("call-")) {
+                relayPrivateSignal(session, jsonMsg);
+                return;
+            }
+
             if ("privateChat".equals(type)) {
                 sendPrivateMessage(session, jsonMsg);
                 return;
@@ -91,12 +96,27 @@ public class IMHandler extends TextWebSocketHandler {
         privateMsg.put("fileName", fileName);
         privateMsg.put("timestamp", now());
 
-        WebSocketSession targetSession = usernameSessionMap.get(toUser);
-        if (targetSession != null && targetSession.isOpen()) {
-            targetSession.sendMessage(new TextMessage(privateMsg.toJSONString()));
+        sendToUser(privateMsg, toUser, senderSession);
+    }
+
+    private void relayPrivateSignal(WebSocketSession senderSession, JSONObject jsonMsg) throws Exception {
+        String fromUser = getUsername(senderSession, jsonMsg);
+        String toUser = jsonMsg.getString("toUser");
+        if (fromUser == null || toUser == null) {
+            return;
         }
-        if (senderSession.isOpen()) {
-            senderSession.sendMessage(new TextMessage(privateMsg.toJSONString()));
+        jsonMsg.put("fromUser", fromUser);
+        jsonMsg.put("timestamp", now());
+        sendToUser(jsonMsg, toUser, senderSession);
+    }
+
+    private void sendToUser(JSONObject payload, String targetUsername, WebSocketSession senderSession) throws Exception {
+        WebSocketSession targetSession = usernameSessionMap.get(targetUsername);
+        if (targetSession != null && targetSession.isOpen()) {
+            targetSession.sendMessage(new TextMessage(payload.toJSONString()));
+        }
+        if (senderSession != null && senderSession.isOpen()) {
+            senderSession.sendMessage(new TextMessage(payload.toJSONString()));
         }
     }
 

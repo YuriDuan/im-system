@@ -2,14 +2,12 @@
   <div :class="['msg', { self: isSelf }]">
     <div class="bubble">
       <div v-if="!isSelf" class="msg-name">{{ sender }}</div>
-      <div class="msg-text">{{ msg.content || "" }}</div>
+      <div v-if="showText" class="msg-text">{{ msg.content || "" }}</div>
 
-      <!-- 图片预览 -->
       <div v-if="isImage" class="msg-image" @click="openLightbox">
         <img :src="msg.fileUrl" :alt="msg.fileName || '图片'" />
       </div>
 
-      <!-- 其他文件链接 -->
       <a
         v-else-if="msg.fileUrl"
         class="file-link"
@@ -42,7 +40,18 @@ const imageExts = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
 const isImage = computed(() => {
   if (!props.msg.fileUrl) return false;
   const url = props.msg.fileUrl.toLowerCase();
-  return imageExts.some((ext) => url.endsWith("." + ext) || url.includes("." + ext + "?"));
+  return (
+    url.startsWith("data:image/") ||
+    url.startsWith("blob:") ||
+    imageExts.some((ext) => url.endsWith("." + ext) || url.includes("." + ext + "?"))
+  );
+});
+
+const showText = computed(() => {
+  if (isImage.value && props.msg.messageType === "sticker") {
+    return false;
+  }
+  return !!(props.msg.content && props.msg.content.trim());
 });
 
 function openLightbox() {

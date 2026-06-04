@@ -15,11 +15,10 @@
       </div>
 
       <div class="tabs">
-        <button :class="['tab', { active: isLogin }]" @click="switchTab('login')">登录</button>
-        <button :class="['tab', { active: !isLogin }]" @click="switchTab('register')">注册</button>
+        <button type="button" :class="['tab', { active: isLogin }]" @click="switchTab('login')">登录</button>
+        <button type="button" :class="['tab', { active: !isLogin }]" @click="switchTab('register')">注册</button>
       </div>
 
-      <!-- 登录表单 -->
       <form v-if="isLogin" class="form" @submit.prevent="handleLogin">
         <div class="field">
           <label for="loginUsername">用户名</label>
@@ -34,7 +33,6 @@
         <div class="hint">如果您已有账户，请直接登录。登录后将建立 WebSocket 连接。</div>
       </form>
 
-      <!-- 注册表单 -->
       <form v-else class="form" @submit.prevent="handleRegister">
         <div class="field">
           <label for="registerUsername">用户名</label>
@@ -61,10 +59,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { store, setCurrentUser, showToast } from "../store.js";
+import { computed, ref } from "vue";
 import { loginApi, registerApi } from "../api.js";
 import { connectSocket } from "../websocket.js";
+import { setCurrentUser, showToast, store } from "../store.js";
 
 const emit = defineEmits(["loggedIn"]);
 
@@ -91,12 +89,14 @@ async function handleLogin() {
     loginError.value = "请输入用户名和密码";
     return;
   }
+
   try {
     const data = await loginApi(username, password);
     if (!data.success) {
       loginError.value = data.message || "登录失败";
       return;
     }
+
     setCurrentUser({
       token: data.token,
       userId: data.userId,
@@ -104,8 +104,8 @@ async function handleLogin() {
     });
     connectSocket();
     emit("loggedIn");
-  } catch (e) {
-    loginError.value = e.message;
+  } catch (error) {
+    loginError.value = error.message;
   }
 }
 
@@ -120,18 +120,20 @@ async function handleRegister() {
     registerError.value = "两次输入的密码不一致";
     return;
   }
+
   try {
     const data = await registerApi(username, email, password, confirmPassword);
     if (!data.success) {
       registerError.value = data.message || "注册失败";
       return;
     }
+
     showToast("注册成功，请登录");
     switchTab("login");
     loginForm.value.username = username;
     loginForm.value.password = "";
-  } catch (e) {
-    registerError.value = e.message;
+  } catch (error) {
+    registerError.value = error.message;
   }
 }
 </script>

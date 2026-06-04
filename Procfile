@@ -1,1 +1,1 @@
-web: java -jar target/im-system-1.0.0.jar --server.port=$PORT
+web: sh -c 'java -jar /app/app.jar --server.port=${PORT:-8080}'

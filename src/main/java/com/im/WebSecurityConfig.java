@@ -41,6 +41,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/h2-console/**").permitAll()
                 // 允许公开的API信息端点
                 .antMatchers("/api/info", "/api/health").permitAll()
+                // 允许公开的文件下载端点（图片/文件通过 <img> 和链接直接访问，无法携带 JWT）
+                .antMatchers("/api/files/download/**").permitAll()
                 // 其他API请求需要认证
                 .antMatchers("/api/**").authenticated()
                 // 其他请求也允许访问

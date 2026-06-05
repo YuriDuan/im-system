@@ -54,9 +54,33 @@ public class FileUploadController {
         }
 
         Resource resource = new FileSystemResource(file);
+        // 根据扩展名判断 MIME 类型
+        String contentType = determineContentType(fileName);
+        // 图片类文件用 inline 让浏览器直接显示，其他文件用 attachment 触发下载
+        boolean isImage = contentType != null && contentType.startsWith("image/");
+        String disposition = isImage ? "inline" : "attachment";
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition + "; filename=\"" + file.getName() + "\"")
                 .body(resource);
+    }
+
+    private String determineContentType(String fileName) {
+        String name = fileName.toLowerCase();
+        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+        if (name.endsWith(".png")) return "image/png";
+        if (name.endsWith(".gif")) return "image/gif";
+        if (name.endsWith(".bmp")) return "image/bmp";
+        if (name.endsWith(".webp")) return "image/webp";
+        if (name.endsWith(".svg")) return "image/svg+xml";
+        if (name.endsWith(".pdf")) return "application/pdf";
+        if (name.endsWith(".doc") || name.endsWith(".docx")) return "application/msword";
+        if (name.endsWith(".xls") || name.endsWith(".xlsx")) return "application/vnd.ms-excel";
+        if (name.endsWith(".zip")) return "application/zip";
+        if (name.endsWith(".mp3")) return "audio/mpeg";
+        if (name.endsWith(".mp4")) return "video/mp4";
+        return "application/octet-stream";
     }
 
     @DeleteMapping("/delete/{fileName}")

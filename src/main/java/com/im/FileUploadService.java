@@ -6,7 +6,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 文件上传服务
@@ -130,14 +133,29 @@ public class FileUploadService {
     }
 
     /**
-     * 生成唯一的文件名
+     * 生成存储文件名 — 保留原始文件名，仅在同名文件已存在时追加序号
      */
     private String generateUniqueFileName(String originalFileName) {
-        String extension = getFileExtension(originalFileName);
-        String nameWithoutExtension = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-        String timestamp = System.currentTimeMillis() + "";
-        String randomId = UUID.randomUUID().toString().substring(0, 8);
-        return nameWithoutExtension + "_" + timestamp + "_" + randomId + "." + extension;
+        File uploadDirectory = new File(uploadDir);
+        if (!uploadDirectory.exists()) {
+            uploadDirectory.mkdirs();
+        }
+
+        String baseName = originalFileName;
+        String extension = "";
+        int lastDot = originalFileName.lastIndexOf('.');
+        if (lastDot > 0) {
+            baseName = originalFileName.substring(0, lastDot);
+            extension = originalFileName.substring(lastDot); // 含 "." 例如 ".jpg"
+        }
+
+        String candidate = originalFileName;
+        int counter = 1;
+        while (new File(uploadDirectory, candidate).exists()) {
+            candidate = baseName + "(" + counter + ")" + extension;
+            counter++;
+        }
+        return candidate;
     }
 
     /**

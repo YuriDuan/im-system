@@ -9,11 +9,6 @@
         </div>
       </div>
 
-      <div class="site-info">
-        <strong>接口地址：</strong>{{ apiBase }}<br />
-        <strong>WebSocket：</strong>{{ wsBase }}
-      </div>
-
       <div class="tabs">
         <button type="button" :class="['tab', { active: isLogin }]" @click="switchTab('login')">登录</button>
         <button type="button" :class="['tab', { active: !isLogin }]" @click="switchTab('register')">注册</button>
@@ -59,15 +54,12 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { loginApi, registerApi } from "../api.js";
 import { connectSocket } from "../websocket.js";
 import { setCurrentUser, showToast, store } from "../store.js";
 
 const emit = defineEmits(["loggedIn"]);
-
-const apiBase = computed(() => store.apiBase);
-const wsBase = computed(() => store.wsBase);
 
 const isLogin = ref(true);
 const loginError = ref("");

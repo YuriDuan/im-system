@@ -138,7 +138,9 @@ input, button { outline: none; }
 }
 .main-content {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--bg);
 }
 .messages {
@@ -484,10 +486,11 @@ input, button { outline: none; }
 .chat-detail {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--panel);
 }
-.chat-detail .messages { flex: 1; }
+.chat-detail .messages { flex: 1; min-height: 0; }
 
 /* Messages */
 .messages {
@@ -680,7 +683,8 @@ button.cancel-btn.small {
 .chat-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--panel);
 }
 .chat-subtabs {
@@ -738,7 +742,7 @@ button.cancel-btn.small {
 }
 
 /* ===== Contacts Page ===== */
-.contacts-page { padding-bottom: 8px; }
+.contacts-page { flex: 1; overflow-y: auto; padding-bottom: 8px; }
 .section {
   margin: 0 10px 6px;
 }

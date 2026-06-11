@@ -20,7 +20,7 @@
             <button class="primary small" @click="doAddFriend(u.id)">添加</button>
           </div>
         </div>
-        <div v-if="searched && !searchResults.length" class="muted">未找到用户</div>
+        <div v-if="searched && !searchResults.length" class="muted">未找到用户 "{{ lastSearch }}"（可能是自己或已有好友会被过滤）</div>
         <button class="modal-close" @click="showAddFriend = false">关闭</button>
       </div>
     </div>
@@ -47,6 +47,7 @@ const showCreateGroup = ref(false);
 const searchKeyword = ref("");
 const searchResults = ref([]);
 const searched = ref(false);
+const lastSearch = ref("");
 const groupName = ref("");
 
 const pageTitle = computed(() => {
@@ -73,10 +74,14 @@ async function handleSearch() {
   const kw = searchKeyword.value.trim();
   if (!kw) return;
   try {
+    lastSearch.value = kw;
     searchResults.value = await searchUsers(kw);
     searched.value = true;
+    if (searchResults.value.length === 0) {
+      showToast(`未找到与 "${kw}" 相关的用户`);
+    }
   } catch (e) {
-    showToast(e.message);
+    showToast("搜索失败：" + e.message);
   }
 }
 

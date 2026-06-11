@@ -20,8 +20,8 @@ async function request(path, options = {}, withAuth = true) {
   return data;
 }
 
-export function requestForm(path, formData) {
-  return request(path, { method: "POST", body: formData });
+export function requestForm(path, formData, method = "POST") {
+  return request(path, { method, body: formData });
 }
 
 // 认证
@@ -123,7 +123,7 @@ export async function updateProfile(updates) {
 export async function uploadAvatar(file) {
   const formData = new FormData();
   formData.append("file", file);
-  return requestForm("/user/avatar", formData);
+  return requestForm("/user/avatar", formData, "PUT");
 }
 
 // 文件

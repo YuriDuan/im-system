@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserAuthService {
@@ -39,6 +40,8 @@ public class UserAuthService {
             user.setPassword(passwordEncoder.encode(password));
             user.setEmail(email);
             user.setIsOnline(false);
+            user.setWechatId(generateWechatId(username));
+            user.setSignature("");
             userRepository.save(user);
 
             Map<String, Object> result = new HashMap<>();
@@ -118,6 +121,10 @@ public class UserAuthService {
         return userRepository.findById(userId).orElse(null);
     }
 
+    public void saveUser(UserEntity user) {
+        userRepository.save(user);
+    }
+
     public Map<String, Object> changePassword(String username, String oldPassword, String newPassword) {
         Optional<UserEntity> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
@@ -139,6 +146,14 @@ public class UserAuthService {
         result.put("success", true);
         result.put("message", "Password updated successfully");
         return result;
+    }
+
+    private String generateWechatId(String username) {
+        String base = username.replaceAll("[^a-zA-Z0-9]", "");
+        if (base.length() > 8) base = base.substring(0, 8);
+        if (base.isEmpty()) base = "user";
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return base + "_" + suffix;
     }
 
     private Map<String, Object> fail(String message) {

@@ -14,21 +14,24 @@ public class GroupController {
     @Autowired
     private GroupService groupService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     /**
      * 创建群组
      */
     @PostMapping("/create")
-    public ResponseEntity<?> createGroup(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> createGroup(@RequestHeader("Authorization") String authHeader,
+                                         @RequestBody Map<String, Object> request) {
+        Long creatorId = extractUserId(authHeader);
+        if (creatorId == null) {
+            return ResponseEntity.status(401).body(fail("Unauthorized"));
+        }
         String groupName = (String) request.get("groupName");
         String description = (String) request.get("description");
-        Long creatorId = ((Number) request.get("creatorId")).longValue();
 
         if (groupName == null || groupName.trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(new HashMap<String, Object>() {{
-                        put("success", false);
-                        put("message", "群组名称不能为空");
-                    }});
+            return ResponseEntity.badRequest().body(fail("群组名称不能为空"));
         }
 
         return ResponseEntity.ok(groupService.createGroup(groupName, description, creatorId));
@@ -38,18 +41,32 @@ public class GroupController {
      * 添加成员
      */
     @PostMapping("/{groupId}/members/add")
-    public ResponseEntity<?> addMember(@PathVariable Long groupId, @RequestBody Map<String, Long> request) {
-        Long userId = request.get("userId");
-        return ResponseEntity.ok(groupService.addMember(groupId, userId));
+    public ResponseEntity<?> addMember(@RequestHeader("Authorization") String authHeader,
+                                       @PathVariable Long groupId,
+                                       @RequestBody Map<String, Long> request) {
+        Long userId = extractUserId(authHeader);
+        if (userId == null) {
+            return ResponseEntity.status(401).body(fail("Unauthorized"));
+        }
+        Long targetUserId = request.get("userId");
+        if (targetUserId == null) targetUserId = userId;
+        return ResponseEntity.ok(groupService.addMember(groupId, targetUserId));
     }
 
     /**
      * 移除成员
      */
     @PostMapping("/{groupId}/members/remove")
-    public ResponseEntity<?> removeMember(@PathVariable Long groupId, @RequestBody Map<String, Long> request) {
-        Long userId = request.get("userId");
-        return ResponseEntity.ok(groupService.removeMember(groupId, userId));
+    public ResponseEntity<?> removeMember(@RequestHeader("Authorization") String authHeader,
+                                          @PathVariable Long groupId,
+                                          @RequestBody Map<String, Long> request) {
+        Long userId = extractUserId(authHeader);
+        if (userId == null) {
+            return ResponseEntity.status(401).body(fail("Unauthorized"));
+        }
+        Long targetUserId = request.get("userId");
+        if (targetUserId == null) targetUserId = userId;
+        return ResponseEntity.ok(groupService.removeMember(groupId, targetUserId));
     }
 
     /**
@@ -77,8 +94,26 @@ public class GroupController {
      * 删除群组
      */
     @DeleteMapping("/{groupId}")
-    public ResponseEntity<?> deleteGroup(@PathVariable Long groupId, @RequestBody Map<String, Long> request) {
-        Long userId = request.get("userId");
+    public ResponseEntity<?> deleteGroup(@RequestHeader("Authorization") String authHeader,
+                                         @PathVariable Long groupId) {
+        Long userId = extractUserId(authHeader);
+        if (userId == null) {
+            return ResponseEntity.status(401).body(fail("Unauthorized"));
+        }
         return ResponseEntity.ok(groupService.deleteGroup(groupId, userId));
+    }
+
+    private Long extractUserId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) return null;
+        return jwtUtil.getUserIdFromToken(token);
+    }
+
+    private Map<String, Object> fail(String msg) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("success", false);
+        m.put("message", msg);
+        return m;
     }
 }

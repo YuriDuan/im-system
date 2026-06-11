@@ -18,6 +18,10 @@ export const store = reactive({
   selectedFriend: null,
   selectedGroup: null,
 
+  currentTab: "chat",
+  currentChatFilter: "group",
+  currentUserProfile: null,
+
   friendCache: [],
   groupCache: [],
   pendingRequests: [],
@@ -78,6 +82,9 @@ export function clearSession() {
   store.currentUser = null;
   store.selectedFriend = null;
   store.selectedGroup = null;
+  store.currentTab = "chat";
+  store.currentChatFilter = "group";
+  store.currentUserProfile = null;
   store.friendCache = [];
   store.groupCache = [];
   store.pendingRequests = [];

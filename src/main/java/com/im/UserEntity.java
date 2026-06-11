@@ -28,6 +28,12 @@ public class UserEntity {
     @Column(name = "avatar_url")
     private String avatarUrl; // 头像URL
 
+    @Column(unique = true, name = "wechat_id")
+    private String wechatId; // 专属微信号
+
+    @Column(name = "signature", length = 200)
+    private String signature; // 个性签名
+
     @Column(name = "is_online")
     private Boolean isOnline = false;
 

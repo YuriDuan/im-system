@@ -1,12 +1,13 @@
 <template>
   <AuthPage v-if="!store.currentUser" @logged-in="onLoggedIn" />
   <div v-else class="app-page">
-    <Sidebar
-      @select-friend="onSelectFriend"
-      @select-group="onSelectGroup"
-      @logout="onLogout"
-    />
-    <ChatPanel ref="chatPanel" />
+    <TopActionBar />
+    <div class="main-content">
+      <ChatPage v-if="store.currentTab === 'chat'" />
+      <ContactsPage v-if="store.currentTab === 'contacts'" />
+      <MePage v-if="store.currentTab === 'me'" />
+    </div>
+    <BottomTabBar />
   </div>
   <ToastNotification />
   <ImageLightbox />
@@ -14,32 +15,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { connectSocket } from "./websocket.js";
 import { setCurrentUser, store } from "./store.js";
+import { getFriendList, getPendingRequests, getGroupList } from "./api.js";
 import AuthPage from "./components/AuthPage.vue";
+import BottomTabBar from "./components/BottomTabBar.vue";
 import CallPanel from "./components/CallPanel.vue";
-import ChatPanel from "./components/ChatPanel.vue";
+import ChatPage from "./components/ChatPage.vue";
+import ContactsPage from "./components/ContactsPage.vue";
 import ImageLightbox from "./components/ImageLightbox.vue";
-import Sidebar from "./components/Sidebar.vue";
+import MePage from "./components/MePage.vue";
+import TopActionBar from "./components/TopActionBar.vue";
 import ToastNotification from "./components/ToastNotification.vue";
 
-const chatPanel = ref(null);
-
 function onLoggedIn() {
-  // AuthPage 宸茬粡澶勭悊浜嗙櫥褰曢€昏緫
-}
-
-function onSelectFriend(friend) {
-  store.currentMode = "friend";
-}
-
-function onSelectGroup(group) {
-  store.currentMode = "group";
-}
-
-function onLogout() {
-  // Sidebar 宸茬粡澶勭悊浜嗘竻闄ら€昏緫
+  // 登录后刷新数据
+  getFriendList().catch(() => {});
+  getPendingRequests().catch(() => {});
+  getGroupList().catch(() => {});
 }
 
 onMounted(() => {
@@ -49,6 +43,10 @@ onMounted(() => {
   if (token && userId && username) {
     setCurrentUser({ token, userId: Number(userId), username });
     connectSocket();
+    // 初始化加载数据
+    getFriendList().catch(() => {});
+    getPendingRequests().catch(() => {});
+    getGroupList().catch(() => {});
   }
 });
 </script>

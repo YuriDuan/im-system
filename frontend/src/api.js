@@ -95,7 +95,7 @@ export async function getGroupList() {
 export async function createGroup(groupName) {
   return request("/groups/create", {
     method: "POST",
-    body: JSON.stringify({ groupName, description: "", creatorId: store.currentUser.userId }),
+    body: JSON.stringify({ groupName, description: "" }),
   });
 }
 
@@ -104,6 +104,26 @@ export async function joinGroup(groupId) {
     method: "POST",
     body: JSON.stringify({ userId: store.currentUser.userId }),
   });
+}
+
+// 个人信息
+export async function getMyProfile() {
+  const data = await request("/user/profile");
+  store.currentUserProfile = data;
+  return data;
+}
+
+export async function updateProfile(updates) {
+  return request("/user/profile", {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function uploadAvatar(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return requestForm("/user/avatar", formData);
 }
 
 // 文件

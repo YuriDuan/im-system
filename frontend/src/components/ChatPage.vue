@@ -15,6 +15,7 @@
             <div class="conv-name">{{ g.name }}</div>
             <div class="conv-sub">{{ g.memberCount || 0 }} 人</div>
           </div>
+          <span v-if="store.unreadCounts['g_' + g.id]" class="unread-badge">{{ store.unreadCounts['g_' + g.id] }}</span>
         </div>
       </div>
       <!-- 单聊列表 -->
@@ -26,6 +27,7 @@
             <div class="conv-name">{{ f.remark || f.username }}</div>
             <div class="conv-sub">{{ f.isOnline ? '在线' : '离线' }}</div>
           </div>
+          <span v-if="store.unreadCounts['p_' + f.username]" class="unread-badge">{{ store.unreadCounts['p_' + f.username] }}</span>
         </div>
       </div>
     </template>
@@ -91,12 +93,20 @@ function openGroupChat(g) {
   store.currentMode = "group";
   store.selectedGroup = g;
   store.selectedFriend = null;
+  const key = "g_" + g.id;
+  if (store.unreadCounts[key]) {
+    store.unreadCounts[key] = 0;
+  }
 }
 
 function openPrivateChat(f) {
   store.currentMode = "friend";
   store.selectedFriend = f;
   store.selectedGroup = null;
+  const key = "p_" + f.username;
+  if (store.unreadCounts[key]) {
+    store.unreadCounts[key] = 0;
+  }
 }
 
 function closeChat() {

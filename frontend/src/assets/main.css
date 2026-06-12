@@ -734,6 +734,23 @@ button.cancel-btn.small {
 .conv-info { flex: 1; min-width: 0; }
 .conv-name { font-weight: 700; font-size: 15px; }
 .conv-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.conv-item { position: relative; }
+.unread-badge {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+}
 .empty-hint {
   padding: 32px 16px;
   color: var(--muted);

@@ -71,8 +71,14 @@ function receivePrivateMessage(msg) {
   const peer = msg.fromUser === store.currentUser.username ? msg.toUser : msg.fromUser;
   if (!store.privateConversations[peer]) store.privateConversations[peer] = [];
   store.privateConversations[peer].push(msg);
-  if (store.selectedFriend && store.selectedFriend.username === peer) {
+  // 判断当前是否正在查看该会话
+  const isActive = store.currentTab === "chat" &&
+    store.selectedFriend && store.selectedFriend.username === peer;
+  if (isActive) {
     store.privateConversations = { ...store.privateConversations };
+  } else {
+    const key = "p_" + peer;
+    store.unreadCounts[key] = (store.unreadCounts[key] || 0) + 1;
   }
 }
 
@@ -81,8 +87,14 @@ function receiveGroupMessage(msg) {
   if (!groupId) return;
   if (!store.groupConversations[groupId]) store.groupConversations[groupId] = [];
   store.groupConversations[groupId].push(msg);
-  if (store.selectedGroup && String(store.selectedGroup.id) === groupId) {
+  // 判断当前是否正在查看该群聊
+  const isActive = store.currentTab === "chat" &&
+    store.selectedGroup && String(store.selectedGroup.id) === groupId;
+  if (isActive) {
     store.groupConversations = { ...store.groupConversations };
+  } else {
+    const key = "g_" + groupId;
+    store.unreadCounts[key] = (store.unreadCounts[key] || 0) + 1;
   }
 }
 

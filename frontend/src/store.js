@@ -28,6 +28,7 @@ export const store = reactive({
 
   privateConversations: {},
   groupConversations: {},
+  unreadCounts: {},  // { "p_username": N, "g_groupId": N }
 
   toastMessage: "",
   toastVisible: false,
@@ -90,6 +91,7 @@ export function clearSession() {
   store.pendingRequests = [];
   store.privateConversations = {};
   store.groupConversations = {};
+  store.unreadCounts = {};
   store.showEmoji = false;
   store.lightboxUrl = "";
   store.call.active = false;

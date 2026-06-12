@@ -82,12 +82,21 @@ function attachMedia(element, stream) {
   }
   if (element.srcObject !== stream) {
     element.srcObject = stream;
+    // 视频元数据加载完成后自动播放（绕过浏览器 autoplay 限制）
+    element.onloadedmetadata = () => {
+      element.play?.().catch(() => {});
+    };
   }
-  element.play?.().catch(() => {});
+  // 如果已有元数据则直接播放
+  if (element.readyState >= 1) {
+    element.play?.().catch(() => {});
+  }
 }
 
 async function syncMedia() {
+  // teleport 渲染可能比 nextTick 晚，加短延迟确保 DOM 就绪
   await nextTick();
+  await new Promise((r) => setTimeout(r, 80));
   if (store.call.kind === "video") {
     attachMedia(remoteVideo.value, store.call.remoteStream);
     attachMedia(localVideo.value, store.call.localStream);

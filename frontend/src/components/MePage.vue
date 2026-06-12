@@ -14,9 +14,14 @@
     <div class="me-name">{{ store.currentUser?.username }}</div>
 
     <!-- 微信号 -->
-    <div class="me-wechat-id" @click="copyWechatId">
+    <div v-if="!editingWechatId" class="me-wechat-id" @click="startEditWechatId">
       微信号：{{ profile?.wechatId || '加载中...' }}
-      <span class="copy-hint">（点击复制）</span>
+      <span class="copy-hint">（点击编辑/复制）</span>
+    </div>
+    <div v-else class="me-signature-edit">
+      <input v-model="wechatIdDraft" placeholder="设置微信号" maxlength="30" @keydown.enter="saveWechatId" />
+      <button class="primary small" @click="saveWechatId">保存</button>
+      <button class="cancel-btn small" @click="editingWechatId = false">取消</button>
     </div>
 
     <!-- 个性签名 -->
@@ -43,6 +48,8 @@ import { hangupCall } from "../call.js";
 const avatarInput = ref(null);
 const editingSignature = ref(false);
 const sigDraft = ref("");
+const editingWechatId = ref(false);
+const wechatIdDraft = ref("");
 
 const profile = computed(() => store.currentUserProfile);
 
@@ -85,6 +92,22 @@ function copyWechatId() {
   const wid = profile.value?.wechatId;
   if (!wid) return;
   navigator.clipboard?.writeText(wid).then(() => showToast("已复制")).catch(() => showToast(wid));
+}
+
+function startEditWechatId() {
+  wechatIdDraft.value = profile.value?.wechatId || "";
+  editingWechatId.value = true;
+}
+
+async function saveWechatId() {
+  const wid = wechatIdDraft.value.trim();
+  if (!wid) { showToast("微信号不能为空"); return; }
+  try {
+    await updateProfile({ wechatId: wid });
+    showToast("微信号已更新");
+    editingWechatId.value = false;
+    await getMyProfile();
+  } catch (e) { showToast(e.message); }
 }
 
 function startEditSignature() {

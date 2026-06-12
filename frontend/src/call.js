@@ -10,6 +10,9 @@ let pendingCandidates = [];
 const rtcConfig = {
   iceServers: [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+    { urls: ["stun:stun.cloudflare.com:3478"] },
+    { urls: ["stun:stun.qq.com:3478"] },
+    { urls: ["stun:stun.miwifi.com:3478"] },
   ],
 };
 
